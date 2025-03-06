@@ -784,9 +784,49 @@ def students_view(request, course=None, course_key=None):
 
     submissions = (
         Submission.objects.filter(exercise__course=course)
-        .values('student__key')
-        .annotate(max_avg=Avg('max_similarity'), max=Max('max_similarity'))
+        .values('student__key', 'exercise__name')
+        .annotate(
+            avg_similarity=Avg('max_similarity'),
+        )
     )
+
+    students = []
+    previous_student = None
+    for submission in submissions:
+        if previous_student != submission['student__key']:
+            students.append(
+                {
+                    'student': submission['student__key'],
+                    'exercises': [],
+                }
+            )
+            previous_student = submission['student__key']
+
+        students[-1]['exercises'].append(
+            {
+                'exercise_name': submission['exercise__name'],
+                'avg_similarity': submission['avg_similarity'],
+            }
+        )
+
+    #Exercise names as a list
+    exercises_names = sorted(course.exercises.all().values_list('name', flat=True))
+
+    for student in students:
+        if len(student['exercises']) == len(exercises_names):
+            continue
+
+        for exercise in exercises_names:
+            if not any(d['exercise_name'] == exercise for d in student['exercises']):
+                student['exercises'].append(
+                    {
+                        'exercise_name': exercise,
+                        'avg_similarity': 0.0,
+                    }
+                )
+
+        #Sort exercises by exercise name
+        student['exercises'] = sorted(student['exercises'], key=lambda x: x['exercise_name'])
 
     context = {
         "hierarchy": (
@@ -795,7 +835,8 @@ def students_view(request, course=None, course_key=None):
             ("Students", None),
         ),
         "course": course,
-        "submissions": submissions,
+        "exercises": exercises_names,
+        "students": students,
     }
 
     return render(request, "review/students_view.html", context)

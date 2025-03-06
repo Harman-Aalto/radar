@@ -28,9 +28,14 @@ fi
 INDEX=1
 SHOULD_MOVE_FILES=false
 
+min=1
+max=10
+EXERCISE_NUMBER=$(($RANDOM%($max-$min+1)+$min))
+EXERCISE_DIR="ex$EXERCISE_NUMBER"
+
 # Check if files are already distributed
 for SUBDIR in "$SRC_DIR"/*; do
-  if [ -d "$SUBDIR/ex2" ]; then
+  if [ -d "$SUBDIR/$EXERCISE_DIR" ]; then
     SHOULD_MOVE_FILES=false
     break
   else
@@ -44,12 +49,12 @@ if $SHOULD_MOVE_FILES; then
   for FILE in "$SRC_DIR"/*; do
     if [ -f "$FILE" ]; then
       # Create the index and ex2 directories
-      DEST_DIR="$SRC_DIR/$INDEX/ex2"
+      DEST_DIR="$SRC_DIR/$INDEX/$EXERCISE_DIR"
       mkdir -p "$DEST_DIR"
-      
+
       # Move the file to the destination directory
       mv "$FILE" "$DEST_DIR"
-      
+
       # Increment the counter
       INDEX=$((INDEX + 1))
     fi
@@ -61,15 +66,15 @@ fi
 
 # Execute the custom Python command for each distributed folder with delay
 for SUBDIR in "$SRC_DIR"/*; do
-  if [ -d "$SUBDIR/ex2" ]; then
-    DEST_DIR="$SUBDIR/ex2"
+  if [ -d "$SUBDIR/$EXERCISE_DIR" ]; then
+    DEST_DIR="$SUBDIR/$EXERCISE_DIR"
     COMMAND="python manage.py loadsubmissions $COURSE_NAME/$EXERCISE_NAME $DEST_DIR"
     echo "Running command for $DEST_DIR"
     echo "Command: $COMMAND"
-    
+
     # Execute the command
     eval $COMMAND
-    
+
     # Wait for the specified delay before continuing to the next one
     sleep $DELAY
   fi
