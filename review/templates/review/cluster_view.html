@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% load review %}
+{% load static %}
+
+{% block head_includes %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src=//cdn.datatables.net/2.2.2/js/dataTables.min.js></script>
+<script src="https://cdn.datatables.net/plug-ins/2.2.2/sorting/natural.min.js"></script>
+{% endblock head_includes %}
+
+{% block css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css" />
+{% endblock %}
+
+{% block content %}
+
+<h3>Cluster {{ cluster_key }} view</h3>
+
+<div>
+    <table class="table" id="clustersdatatable">
+        <thead>
+            <tr>
+							<th>Student</th>
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+							<th>Students</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script>
+	$('#clustersdatatable').DataTable( {
+		lengthMenu: [
+			[-1, 10, 25, 100],
+			["All", 10, 25, 100] ],
+		columnDefs: [
+			{ type: 'natural', target: 0 },
+			{ className: 'dt-left', targets: '_all' },
+		]
+	});
+</script>
+
+{% endblock %}

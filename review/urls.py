@@ -21,6 +21,8 @@ from review.views import (
     pair_view,
     pair_view_summary,
     flagged_pairs,
+    clusters_view,
+    cluster_view,
 )
 
 
@@ -28,11 +30,13 @@ urlpatterns = [
     re_path(
         r'^$',
         index,
-        name='index'),
+        name='index'
+    ),
     re_path(
         r'^(?P<course_key>\w+)/$',
         course,
-        name='course'),
+        name='course'
+    ),
     re_path(
         r'^(?P<course_key>\w+)/histogram/$',
         course_histograms,
@@ -51,11 +55,23 @@ urlpatterns = [
     re_path(
         r'^(?P<course_key>\w+)/graph/$',
         graph_ui,
-        name='graph_ui'),
+        name='graph_ui'
+    ),
+    re_path(
+        r'^(?P<course_key>\w+)/clusters/$',
+        clusters_view,
+        name='clusters_view'
+    ),
+    re_path(
+        r'^(?P<course_key>\w+)/clusters/(?P<cluster_key>\w+)$',
+        cluster_view,
+        name='cluster_view'
+    ),
     re_path(
         r'^(?P<course_key>\w+)/students/$',
         students_view,
-        name='students_view'),
+        name='students_view'
+    ),
     re_path(
         r'^(?P<course_key>\w+)/students/(?P<student_key>\w+)/$',
         student_view,
@@ -79,7 +95,8 @@ urlpatterns = [
     re_path(
         r'^(?P<course_key>\w+)/graph/build$',
         build_graph,
-        name='build_graph'),
+        name='build_graph'
+    ),
     re_path(
         r'^(?P<course_key>\w+)/graph/invalidate$',
         invalidate_graph_cache,
@@ -88,7 +105,8 @@ urlpatterns = [
     re_path(
         r'^(?P<course_key>\w+)/(?P<exercise_key>\w+)/$',
         exercise,
-        name='exercise'),
+        name='exercise'
+    ),
     re_path(
         r'^(?P<course_key>\w+)/(?P<exercise_key>\w+)/settings/$',
         exercise_settings,
@@ -112,9 +130,11 @@ urlpatterns = [
     re_path(
         r'^dolos-proxy/(?P<path>.*)$',
         dolos_proxy_view.as_view(),
-        name='dolos_proxy'),
+        name='dolos_proxy'
+    ),
     re_path(
         r'^dolos-api-proxy/(?P<path>.*)$',
         dolos_proxy_api_view.as_view(),
-        name='dolos_api_proxy'),
+        name='dolos_api_proxy'
+    ),
 ]

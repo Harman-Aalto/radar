@@ -172,6 +172,8 @@ PROVIDERS = {
         "get_exercise_template": "provider.filesystem.load_exercise_template",
         # Disable asynchronous graph calculation (requires celery daemon)
         "async_graph": False,
+        # Disable asynchronous cluster calculation (requires celery daemon)
+        "async_clusters": False,
     },
 }
 

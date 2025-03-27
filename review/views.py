@@ -20,6 +20,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
 from django.db.models import Avg, Max, Q
+from django.core.handlers.wsgi import WSGIRequest
 
 from data.models import Course, Comparison, Student, Submission
 from data import graph
@@ -1020,6 +1021,97 @@ def flagged_pairs(request, course=None, course_key=None):
 
     return render(request, "review/flagged_pairs.html", context)
 
+
+# Render the clusters view
+@access_resource
+def clusters_view(request: WSGIRequest, course: Course | None = None, course_key: str | None = None) -> HttpResponse:
+
+    context = {
+        "hierarchy": (
+            (settings.APP_NAME, reverse("index")),
+            (course.name, reverse("course", kwargs={"course_key": course.key})),
+            ("Clusters", None),
+        ),
+        "minimum_similarity_threshold": settings.MATCH_STORE_MIN_SIMILARITY,
+        "number_of_exercises": course.exercises.count(),
+        "course": course,
+    }
+
+    return render(request, "review/clusters_view.html", context)
+
+
+# Render the cluster view
+@access_resource
+def cluster_view(request: WSGIRequest, cluster_key: str, course: Course | None = None, course_key: str | None = None) -> HttpResponse:
+
+    context = {
+        "hierarchy": (
+            (settings.APP_NAME, reverse("index")),
+            (course.name, reverse("course", kwargs={"course_key": course.key})),
+            ("Clusters", reverse("course", kwargs={"course_key": course.key})),
+            (cluster_key, None),
+        ),
+        "course": course,
+        "cluster_key": cluster_key,
+    }
+
+    return render(request, "review/cluster_view.html", context)
+
+
+@access_resource
+def build_table(request, course):
+    if request.method != "POST" or not is_ajax(request):
+        return HttpResponseBadRequest()
+
+    task_state = json.loads(request.body.decode("utf-8"))
+
+    if task_state["task_id"]:
+        # Task is pending, check state and return result if ready
+        async_result = AsyncResult(task_state["task_id"])
+        if async_result.ready():
+            task_state["ready"] = True
+            task_state["task_id"] = None
+            if async_result.state == "SUCCESS":
+                task_state["table_data"] = async_result.get()
+                async_result.forget()
+            else:
+                task_state["table_data"] = {}
+    elif not task_state["ready"]:
+        clusters_data = json.loads(course.clusters_json or '{}')
+        min_similarity, min_matches, use_unique_ex = (
+            task_state["min_similarity"],
+            task_state["min_matches"],
+            task_state["unique_exercises"],
+        )
+        if (
+            clusters_data
+            and clusters_data["min_similarity"] == min_similarity
+            and clusters_data["min_matches"] == min_matches
+            and clusters_data["unique_exercises"] == use_unique_ex
+        ):
+            # Graph was already cached
+            task_state["clusters_data"] = clusters_data
+            task_state["ready"] = True
+        else:
+            # No graph cached, build
+            p_config = provider_config(course.provider)
+            if not p_config.get("async_clusters", True):
+                task_state["clusters_data"] = get_clusters(
+                    course.key, float(min_similarity), int(min_matches), use_unique_ex
+                )
+                task_state["ready"] = True
+            else:
+                async_task = get_clusters.delay(
+                    course.key, float(min_similarity), int(min_matches), use_unique_ex
+                )
+                task_state["task_id"] = async_task.id
+
+    return JsonResponse(task_state)
+
+
+# Helper function to get clusters from the database
+def get_clusters(course, min_similarity, min_matches, unique_exercises):
+    print("Generating clusters for", course)
 
 # TODO: Move to helper functions
 # Helper function for presenting submissions in chunks of count

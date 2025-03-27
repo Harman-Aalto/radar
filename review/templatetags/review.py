@@ -38,3 +38,13 @@ def student_td(course, comparison, b=False):
 @register.filter
 def group_by(value, arg):
     return grouped(value, arg)
+
+
+@register.filter
+def length(value):
+    return len(value)
+
+
+@register.filter
+def join_list(value):
+    return ", ".join(value).replace('"', '')

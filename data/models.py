@@ -76,6 +76,12 @@ class Course(NamespacedApiObject):
                   " data.graph.generate_match_graph",
     )
     objects = CourseManager()
+    clusters_json = models.TextField(
+        blank=True,
+        default='',
+        help_text="JSON-serialized string of the cluster definition returned by"
+                  " data.graph.generate_match_clusters",
+    )
 
     class Meta:
         ordering = ["-created"]
