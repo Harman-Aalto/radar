@@ -58,6 +58,7 @@ def course(request, course_key=None, course=None):
         "exercises": course.exercises.all(),
     }
     if request.method == "POST":
+        print(request)
         # The user can click "Match all unmatched" for a shortcut to match all unmatched submissions for every exercise
         p_config = provider_config(course.provider)
         if "match-all-unmatched-for-exercises" in request.POST:

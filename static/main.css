@@ -300,3 +300,12 @@ pre.sample-highlight { display:inline-block; }
 #dt-length-0 {
 	margin-right: 5px;
 }
+
+/* Course View */
+#exercises-table > tbody > tr {
+	border-bottom: 2px solid #dddddd;
+}
+
+#unmatched-row {
+	background-color: #fee8c8;
+}
