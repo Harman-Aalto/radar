@@ -55,7 +55,7 @@ def course(request, course_key=None, course=None):
     context = {
         "hierarchy": ((settings.APP_NAME, reverse("index")), (course.name, None)),
         "course": course,
-        "exercises": course.exercises.all(),
+        "exercises": course.exercises.all().order_by("created"),
     }
     if request.method == "POST":
         # The user can click "Match all unmatched" for a shortcut to match all unmatched submissions for every exercise
@@ -812,7 +812,7 @@ def students_view(request: WSGIRequest, course: Course | None = None, course_key
     )
 
     # Exercise names as a list
-    exercise_names = sorted(course.exercises.all().values_list('name', flat=True))
+    exercise_names = course.exercises.all().order_by('created').values_list('name', flat=True)
 
     # Student keys
     student_info = submissions.values_list('student__key', 'student__is_staff').distinct()

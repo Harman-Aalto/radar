@@ -306,7 +306,8 @@ function initializeTable() {
   $('#clustersdatatable').DataTable( {
     lengthMenu: [
       [-1, 10, 25, 100],
-      ["All", 10, 25, 100] ],
+      ["All", 10, 25, 100]
+    ],
     columnDefs: [
       { type: 'natural', targets: [0,1] },
       { targets: [2], orderData: [0, 2]},

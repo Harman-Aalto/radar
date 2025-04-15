@@ -19,6 +19,7 @@ function getStudentNames() {
   });
 }
 
+
 // Initialize the UI
 function initializeUI() {
   // Build control UI
@@ -93,6 +94,39 @@ function filterCells() {
       $(this).css('visibility', 'visible'); // Show the cell if it meets the criteria
     }
   });
+
+  hideEmptyCells();
+}
+
+
+// Hide empty cells
+function hideEmptyCells() {
+  // Get all the rows
+  var rows = $('#clustersdatatable tr');
+
+  // Loop through each row
+  rows.each(function() {
+    var row = $(this);
+    var emptyCells = row.find('td').filter(function() {
+
+      var hide = $(this).css('visibility') === 'hidden' || $(this).text() === '';
+
+      if(!hide) {
+        // Check if the cell is empty
+        console.log("Value:", $(this).text());
+      }
+
+      return hide;
+    });
+
+    console.log(emptyCells.length, row.find('td').length - 1, row);
+    // If all cells in the row are hidden, hide the row
+    if (emptyCells.length === row.find('td').length - 1) {
+      row.css('visibility', 'collapse');
+    } else {
+      row.css('visibility', 'visible');
+    }
+  });
 }
 
 
@@ -105,15 +139,33 @@ function initializeTable() {
 	$('#clustersdatatable').DataTable( {
 		lengthMenu: [
 			[-1, 10, 25, 100],
-			["All", 10, 25, 100] ],
+			["All", 10, 25, 100]
+    ],
 		columnDefs: [
 			{ type: 'natural', target: 0 },
 			{ type: emptyString, targets: '_all' },
 			{ className: 'dt-center', targets: '_all' },
 		],
     order: [],
+    fixedColumns: {
+      start: 1,
+    },
+    scrollX: true,
+    scrollY: '85vh',
+    scrollCollapse: true,
 	});
 
+  // Highlight cells based on their percentage value
+  highlightCells();
+
+  // Add event listeners to the table cells
+  $('#clustersdatatable td').on('mouseenter', handleMouseEnter);
+  $('#clustersdatatable td').on('mouseleave', handleMouseLeave);
+}
+
+
+// Highlight cells based on their percentage value
+function highlightCells() {
 	// Get every table cell that has a percentage value
 	var cells = $('#clustersdatatable td').filter(function() {
 		return this.innerText.includes('%');
@@ -136,6 +188,56 @@ function initializeTable() {
 			cell.style.backgroundColor = '#fee8c8';
 		}
 	};
+}
+
+
+// Handle mouse enter event
+function handleMouseEnter() {
+  var table = $('#clustersdatatable').DataTable();
+
+  // Get the index of the cell
+  let colIdx = table.cell(this).index().column;
+  let rowIdx = table.cell(this).index().row;
+
+  //Get head of the column
+  let colHead = table.column(colIdx).header();
+
+  // Change the header color
+  colHead.classList.add('highlight');
+
+  // Get the first cell of the row
+  let rowHead = table.rows(rowIdx).nodes()[0].cells[0];
+
+  // Change the header color
+  rowHead.classList.add('highlight');
+
+  // Change the background color of the cell
+  this.classList.add('highlight');
+}
+
+
+// Handle mouse leave event
+function handleMouseLeave() {
+  var table = $('#clustersdatatable').DataTable();
+
+  // Get the index of the cell
+  let colIdx = table.cell(this).index().column;
+  let rowIdx = table.cell(this).index().row;
+
+  //Get head of the column
+  let colHead = table.column(colIdx).header();
+
+  // Change the header color
+  colHead.classList.remove('highlight');
+
+  // Get the first cell of the row
+  let rowHead = table.rows(rowIdx).nodes()[0].cells[0];
+
+  // Change the header color
+  rowHead.classList.remove('highlight');
+
+  // Change the background color of the cell
+  this.classList.remove('highlight');
 }
 
 

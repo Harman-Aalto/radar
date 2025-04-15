@@ -34,7 +34,7 @@
 {% if unmatched %}
 <form method="post">
     {% csrf_token %}
-    <button class="btn btn-primary" type="submit" name="match-all-unmatched-for-exercises"><span class="glyphicon glyphicon-refresh"></span> Recompare all exercises with unmatched submissions</button>
+    <button class="btn btn-primary" id="unmatched-button" type="submit" name="match-all-unmatched-for-exercises"><span class="glyphicon glyphicon-refresh"></span> Recompare all exercises with unmatched submissions</button>
 </form>
 {% endif %}
 {% endwith %}
@@ -52,7 +52,8 @@
     <tr>
         <th title="A+ exercise">Exercise</th>
         <th title="Total amount of files submitted to an exercise">Submissions</th>
-        <th title="Submissions currently being matched and waiting for results">Pending</th>
+        <th title="Submissions currently matched">Matched</th>
+		<th title="Submissions currently being matched and waiting for results">Pending</th>
         <th title="Submissions not yet matched and waiting for actions">Not matched</th>
         <th title="Submissions that cannot be matched, e.g. non-text such as images or binaries.">Invalid</th>
         <th title="Unique A+ users who have submitted at least one file to an exercise">Unique submitters</th>
@@ -64,10 +65,11 @@
     </tr>
     </thead>
     {% for exercise in exercises %}
-    <tr class="{% if exercise.paused %}paused {% endif %}">
+    <tr class="{% if exercise.paused %}paused {% endif %}" id="{% if exercise.valid_unmatched_submissions.count > 0 %}unmatched-row{% endif %}">
         <td><a href="{% url 'exercise' course_key=course.key exercise_key=exercise.key %}">{{ exercise.name }}</a></td>
         <td>{{ exercise.submissions.count }}</td>
-        <td>{{ exercise.get_submissions.count }}</td>
+        <td>{{ exercise.valid_matched_submissions.count }}</td>
+		<td>{{ exercise.get_submissions.count }}</td>
         {% if exercise.has_unassigned_submissions %}
         <td class="info">
             <strong>{{ exercise.valid_unmatched_submissions.count }}</strong>
@@ -125,5 +127,20 @@
             location.reload();
         }, 2000);
     });
+
+	// On unmatched button click
+	$('#unmatched-button').on('click', function(event) {
+		var exercises = $('#exercises-table tbody tr');
+
+		exercises.each(function() {
+			// Get 5th column value (Not matched submissions)
+			var unmatchedCount = parseInt($(this).find('td:nth-child(5)').text().trim());
+
+			if (unmatchedCount > 0) {
+				// Change background color of the row
+				$(this).css('background-color', '#fdbb83');
+			}
+		});
+	});
 </script>
 {% endblock %}
